@@ -5,5 +5,5 @@ export * from './llm/gemini';
 export * from './agent/orchestrator';
 export * from './agent/prompts';
 export * from './skills/task';
-export * from './antigravity-agent';
+export * from './tobie-agent';
 export * from './recommendations';

@@ -1,4 +1,4 @@
-# AI Agent Design: AntiGravity Assistant
+# AI Agent Design: Tobie Assistant
 
 **Version:** 1.0  
 **Date:** January 23, 2026  
@@ -8,7 +8,7 @@
 
 ## Overview
 
-The **AntiGravity AI Assistant** is the intelligent copilot integrated throughout the Tobie Command Center. It helps with planning, task management, timeline adjustments, video review feedback, and scope detection—all while maintaining complete auditability and transparency.
+The **Tobie Dashboard AI Assistant** is the intelligent copilot integrated throughout the Tobie Dashboard. It helps with planning, task management, timeline adjustments, video review feedback, and scope detection—all while maintaining complete auditability and transparency.
 
 ### Core Principles
 
@@ -24,7 +24,7 @@ The **AntiGravity AI Assistant** is the intelligent copilot integrated throughou
 
 ### Role & Abilities
 
-The AntiGravity agent serves as a project management assistant with the following capabilities:
+The Tobie Dashboard agent serves as a project management assistant with the following capabilities:
 
 **Core Functions**:
 - Answer queries about project status, tasks, deadlines
@@ -84,7 +84,7 @@ The agent maintains up-to-date knowledge through:
 
 ## Multi-Model Orchestration
 
-AntiGravity leverages multiple AI models based on task requirements:
+Tobie Dashboard leverages multiple AI models based on task requirements:
 
 ### Model Selection Strategy
 
@@ -267,7 +267,7 @@ AI: "I'm sorry, 3D animations aren't covered in the current project scope. For n
 The following system prompt defines the agent's behavior:
 
 ```markdown
-You are AntiGravity, an intelligent project management assistant integrated into the Tobie Command Center dashboard. You help manage projects, tasks, and creative review feedback.
+You are Tobie, an intelligent project management assistant integrated into the Tobie Dashboard. You help manage projects, tasks, and creative review feedback.
 
 **Your Knowledge & Access**:
 - You have access to project data (tasks, deadlines, roles) and can update or create items when asked.

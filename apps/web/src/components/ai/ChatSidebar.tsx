@@ -1,7 +1,7 @@
 /**
  * ChatSidebar Component
  * 
- * Collapsible sidebar for interacting with the AntiGravity AI Assistant
+ * Collapsible sidebar for interacting with the Tobie AI Assistant
  */
 
 'use client';
@@ -136,7 +136,7 @@ export function ChatSidebar({ projectId }: ChatSidebarProps) {
                     <div className="flex items-center justify-between p-4 border-b border-gray-800">
                         <div className="flex items-center gap-2">
                             <div className="w-2 h-2 bg-[#4CAF50] rounded-full animate-pulse"></div>
-                            <h2 className="text-white font-semibold">AntiGravity AI</h2>
+                            <h2 className="text-white font-semibold">Tobie Assistant</h2>
                         </div>
                         <button
                             onClick={() => setIsOpen(false)}
@@ -177,7 +177,7 @@ export function ChatSidebar({ projectId }: ChatSidebarProps) {
                                     />
                                 </svg>
                                 <p className="text-sm">
-                                    Hi! I'm AntiGravity, your AI project assistant.
+                                    Hi! I'm Tobie, your AI project assistant.
                                     <br />
                                     Ask me about tasks, projects, or timelines.
                                 </p>
@@ -191,8 +191,8 @@ export function ChatSidebar({ projectId }: ChatSidebarProps) {
                             >
                                 <div
                                     className={`max-w-[80%] rounded-lg p-3 ${msg.role === 'user'
-                                            ? 'bg-[#3D85C6] text-white'
-                                            : 'bg-[#2A2A2C] text-gray-100'
+                                        ? 'bg-[#3D85C6] text-white'
+                                        : 'bg-[#2A2A2C] text-gray-100'
                                         }`}
                                 >
                                     <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
@@ -240,7 +240,7 @@ export function ChatSidebar({ projectId }: ChatSidebarProps) {
                                 value={input}
                                 onChange={(e) => setInput(e.target.value)}
                                 onKeyDown={handleKeyDown}
-                                placeholder="Ask AntiGravity anything..."
+                                placeholder="Ask Tobie anything..."
                                 className="flex-1 bg-[#2A2A2C] text-white placeholder-gray-500 rounded-lg p-3 resize-none focus:outline-none focus:ring-2 focus:ring-[#3D85C6] min-h-[44px] max-h-32"
                                 rows={1}
                                 disabled={isLoading}

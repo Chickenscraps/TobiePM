@@ -1,14 +1,14 @@
-# Tobie Command Center (AntiGravity)
+# Tobie Dashboard
 
 **Governed benefits communication platform for video production teams**
 
 ## Overview
 
-Tobie Command Center (codename: **AntiGravity**) is a mobile-first, AI-powered project management dashboard designed for a 2-person video production startup (Josh & Ann). It provides centralized project management, task tracking, intelligent workflow recommendations, and (planned) integrated video review capabilities—all enhanced by AI assistance.
+Tobie Dashboard is a mobile-first, AI-powered project management dashboard designed for a 2-person video production startup (Josh & Ann). It provides centralized project management, task tracking, intelligent workflow recommendations, and (planned) integrated video review capabilities—all enhanced by AI assistance.
 
 ### Vision
 
-Built on the principle that project management should be **simple, intuitive, and just work**. AntiGravity focuses on what matters: upcoming deliverables, timelines, and collaboration, while hiding complexity until needed through progressive disclosure. An integrated AI "copilot" helps with planning, makes adjustments on command, logs all changes for audit, and intelligently handles project feedback.
+Built on the principle that project management should be **simple, intuitive, and just work**. Tobie Dashboard focuses on what matters: upcoming deliverables, timelines, and collaboration, while hiding complexity until needed through progressive disclosure. An integrated AI "copilot" helps with planning, makes adjustments on command, logs all changes for audit, and intelligently handles project feedback.
 
 ### Key Value Proposition
 
@@ -370,7 +370,7 @@ TypeError: next_dist_server_web_exports_next_request__WEBPACK_IMPORTED_MODULE_0_
 - [x] Admin panel with RBAC
 
 ### Phase 5: AI Integration (PLANNED) 🎯
-- [ ] AntiGravity AI agent implementation (`@tobie/agent-core`)
+- [ ] Tobie Dashboard AI agent implementation (`@tobie/agent-core`)
 - [ ] Natural language task management
 - [ ] Timeline planning and suggestions
 - [ ] OpenAI/Anthropic/Gemini multi-model integration

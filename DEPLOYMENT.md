@@ -1,6 +1,6 @@
-# AntiGravity Dashboard - Deployment Guide
+# Tobie Dashboard - Deployment Guide
 
-This guide outlines the steps to deploy the **AntiGravity** project management system to production.
+This guide outlines the steps to deploy the **Tobie Dashboard** project management system to production.
 
 ## 1. Prerequisites
 - **Node.js**: v18+ (LTS recommended)
@@ -12,7 +12,7 @@ Clone the repository and install dependencies:
 
 ```bash
 git clone <repository-url>
-cd antigravity
+cd tobie-dashboard
 pnpm install
 ```
 
@@ -62,7 +62,7 @@ pnpm start
 The application will be available at your configured port (default: 3000).
 
 ## 7. AI Agent Configuration
-To enable the **AntiGravity** AI assistant:
+To enable the **Tobie** AI assistant:
 1. Ensure `AI_ENABLED="true"` in `.env`.
 2. Verify your API key (`OPENAI_API_KEY` or `GOOGLE_AI_API_KEY`) is valid.
 3. The Global Chat Widget will automatically appear for logged-in users.

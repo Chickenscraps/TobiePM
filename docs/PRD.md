@@ -1,4 +1,4 @@
-# Product Requirements Document: Tobie Command Center (AntiGravity)
+# Product Requirements Document: Tobie Dashboard
 
 **Version:** 1.1  
 **Date:** January 23, 2026  
@@ -9,7 +9,7 @@
 
 ## 1. Executive Summary
 
-Tobie Command Center (codename: **AntiGravity**) is a mobile-first, AI-powered project management dashboard for Tobie.team, consisting of:
+Tobie Dashboard is a mobile-first, AI-powered project management dashboard for Tobie.team, consisting of:
 1. **Web Portal** - Dashboard for project management, task tracking, team coordination, and video review
 2. **AI Assistant** - Intelligent copilot for planning, task management, and scope detection
 3. **Desktop Agent** (planned) - Local tray application for native notifications and file organization
@@ -24,7 +24,7 @@ We aim to build a project management dashboard that is **simple, intuitive, and 
 
 ## 2. Design Principles
 
-AntiGravity is built on these core UX principles:
+Tobie Dashboard is built on these core UX principles:
 
 1. **Mobile-First & Responsive**: Design for the smallest screen first, then enhance for larger screens. All interactions are touch-friendly (44px+ targets).
 2. **Clear & Minimal Interface**: Embrace minimalism—plenty of whitespace, limited color palette, remove/hide non-essential elements.

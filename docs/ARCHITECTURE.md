@@ -1,4 +1,4 @@
-# Architecture Document: Tobie Command Center
+# Architecture Document: Tobie Dashboard
 
 **Version:** 1.1  
 **Date:** January 23, 2026  
@@ -10,7 +10,7 @@
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                           TOBIE COMMAND CENTER                               │
+│                           TOBIE DASHBOARD                                    │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                              │
 │  ┌──────────────────────┐         ┌──────────────────────┐                  │
@@ -391,7 +391,7 @@ interface Notification {
 | **Web Frontend** | Next.js 15 (App Router) | RSC, Server Actions, Stability |
 | **Web Styling** | Vanilla CSS + Tailwind | Custom Tobie design system |
 | **Web Auth** | NextAuth.js v5 (Beta) | Flexible, middleware-based |
-| **AI Layer** | Google Gemini 1.5 | Cost-effective, large context window |
+| **AI Layer** | Google Gemini 1.5 | Tobie Dashboard AI assistant |
 | **Desktop Framework** | Tauri v2 | Secure, small, performant |
 | **Database (Cloud)** | PostgreSQL (Supabase) | Scalable, reliable |
 | **Database local** | Prisma v7 / SQLite | Modern ORM patterns |

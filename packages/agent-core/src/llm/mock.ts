@@ -5,7 +5,7 @@ export class MockProvider implements LLMProvider {
 
     async chat(messages: ChatMessage[], _options?: CompletionOptions): Promise<string> {
         const lastUserMessage = messages.filter(m => m.role === 'user').pop()?.content || '';
-        return `[Mock AI Response] You said: "${lastUserMessage}". This is a simulated response from the AntiGravity Agent.`;
+        return `[Mock AI Response] You said: "${lastUserMessage}". This is a simulated response from the Tobie Assistant.`;
     }
 
     async *chatStream(messages: ChatMessage[], options?: CompletionOptions): AsyncIterable<string> {

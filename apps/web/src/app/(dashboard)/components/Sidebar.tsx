@@ -99,7 +99,7 @@ export function Sidebar({ user }: SidebarProps) {
                     </div>
                     <div>
                         <h1 className="font-bold text-white text-sm md:text-base">tobie.team</h1>
-                        <p className="text-xs text-text-secondary hidden md:block">Command Center</p>
+                        <p className="text-xs text-text-secondary hidden md:block">Dashboard</p>
                     </div>
                 </Link>
             </div>
@@ -114,8 +114,8 @@ export function Sidebar({ user }: SidebarProps) {
                             href={item.href}
                             onClick={() => setMobileMenuOpen(false)}
                             className={`flex items-center gap-3 px-4 py-3 md:py-2.5 rounded-lg transition-all touch-manipulation ${isActive
-                                    ? 'bg-brand-blue/20 text-brand-blue'
-                                    : 'text-text-secondary hover:text-white hover:bg-white/5'
+                                ? 'bg-brand-blue/20 text-brand-blue'
+                                : 'text-text-secondary hover:text-white hover:bg-white/5'
                                 }`}
                         >
                             {item.icon}
@@ -140,8 +140,8 @@ export function Sidebar({ user }: SidebarProps) {
                                     href={item.href}
                                     onClick={() => setMobileMenuOpen(false)}
                                     className={`flex items-center gap-3 px-4 py-3 md:py-2.5 rounded-lg transition-all touch-manipulation ${isActive
-                                            ? 'bg-brand-blue/20 text-brand-blue'
-                                            : 'text-text-secondary hover:text-white hover:bg-white/5'
+                                        ? 'bg-brand-blue/20 text-brand-blue'
+                                        : 'text-text-secondary hover:text-white hover:bg-white/5'
                                         }`}
                                 >
                                     {item.icon}

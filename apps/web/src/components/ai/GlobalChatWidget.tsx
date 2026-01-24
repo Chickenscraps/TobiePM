@@ -79,12 +79,12 @@ export default function GlobalChatWidget() {
             <button
                 onClick={() => setIsOpen(true)}
                 className="fixed bottom-6 right-6 p-4 bg-primary-600 hover:bg-primary-500 rounded-full shadow-2xl transition-transform hover:scale-110 z-50 group"
-                title="Open AntiGravity Assistant"
+                title="Open Tobie Assistant"
                 aria-label="Open AI Assistant"
             >
                 <Sparkles className="w-6 h-6 text-white" />
                 <span className="absolute right-full mr-3 top-1/2 -translate-y-1/2 px-2 py-1 bg-neutral-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-                    Ask AntiGravity
+                    Ask Tobie
                 </span>
             </button>
         );
@@ -101,7 +101,7 @@ export default function GlobalChatWidget() {
                     <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-primary-500 to-amber-500 flex items-center justify-center">
                         <Sparkles className="w-3 h-3 text-white" />
                     </div>
-                    <span className="font-semibold text-white text-sm">AntiGravity</span>
+                    <span className="font-semibold text-white text-sm">Tobie Assistant</span>
                 </div>
                 <div className="flex items-center gap-1 text-neutral-400">
                     <button
@@ -125,7 +125,7 @@ export default function GlobalChatWidget() {
                     <div className="flex-1 overflow-y-auto p-4 space-y-4">
                         {messages.length === 0 && (
                             <div className="text-center text-neutral-500 text-sm mt-8">
-                                <p>Hi! I'm AntiGravity.</p>
+                                <p>Hi! I'm Tobie.</p>
                                 <p className="text-xs mt-1">I can help you manage tasks, check scope, or answers questions about your project.</p>
                             </div>
                         )}

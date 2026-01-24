@@ -1,8 +1,8 @@
 /**
- * AntiGravity AI Agent
+ * Tobie AI Agent
  * 
  * Main agent class that orchestrates AI interactions, manages context,
- * and handles transcripts for the Tobie Command Center.
+ * and handles transcripts for the Tobie Dashboard.
  */
 
 import type { AIProvider, Message, ChatOptions } from './ai/types';
@@ -39,7 +39,7 @@ export interface ChatOutput {
 // AGENT CLASS
 // ============================================================================
 
-export class AntiGravityAgent {
+export class TobieAgent {
     private provider: AIProvider;
     private defaultModel?: string;
     private maxConversationLength: number;
@@ -102,7 +102,7 @@ export class AntiGravityAgent {
      */
     async chat(input: ChatInput, options?: ChatOptions): Promise<ChatOutput> {
         if (!this.isReady()) {
-            throw new Error('AntiGravity agent is not configured');
+            throw new Error('Tobie agent is not configured');
         }
 
         const messages = this.buildMessages(input);
@@ -127,7 +127,7 @@ export class AntiGravityAgent {
         options?: ChatOptions
     ): AsyncIterableIterator<string> {
         if (!this.isReady()) {
-            throw new Error('AntiGravity agent is not configured');
+            throw new Error('Tobie agent is not configured');
         }
 
         const messages = this.buildMessages(input);
@@ -174,17 +174,17 @@ export class AntiGravityAgent {
 }
 
 /**
- * Factory function to create an AntiGravity agent with an AI provider
+ * Factory function to create a Tobie agent with an AI provider
  * Defaults to Gemini (free tier available)
  */
-export function createAntiGravityAgent(
+export function createTobieAgent(
     apiKey: string,
     options?: {
         provider?: 'openai' | 'gemini';
         model?: string;
         maxConversationLength?: number;
     }
-): AntiGravityAgent {
+): TobieAgent {
     const providerType = options?.provider || 'gemini';
 
     let provider;
@@ -203,7 +203,7 @@ export function createAntiGravityAgent(
         });
     }
 
-    return new AntiGravityAgent(provider, {
+    return new TobieAgent(provider, {
         defaultModel: options?.model,
         maxConversationLength: options?.maxConversationLength,
     });

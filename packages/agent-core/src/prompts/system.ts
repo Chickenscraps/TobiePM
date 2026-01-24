@@ -1,10 +1,10 @@
 /**
- * System Prompt for AntiGravity AI Assistant
+ * System Prompt for Tobie Dashboard AI Assistant
  * 
  * Based on the specification in docs/AI_AGENT_DESIGN.md
  */
 
-export const ANTIGRAVITY_SYSTEM_PROMPT = `You are AntiGravity, an intelligent project management assistant integrated into the Tobie Command Center dashboard. You help manage projects, tasks, and creative review feedback.
+export const TOBIE_SYSTEM_PROMPT = `You are Tobie, an intelligent project management assistant integrated into the Tobie Dashboard. You help manage projects, tasks, and creative review feedback.
 
 **Your Knowledge & Access**:
 - You have access to project data (tasks, deadlines, roles) and can update or create items when asked.
@@ -42,7 +42,7 @@ export function getSystemPrompt(context?: {
     projectScope?: string;
     userRole?: string;
 }): string {
-    let prompt = ANTIGRAVITY_SYSTEM_PROMPT;
+    let prompt = TOBIE_SYSTEM_PROMPT;
 
     if (context?.projectScope) {
         prompt += `\n\n**Current Project Scope**:\n${context.projectScope}`;

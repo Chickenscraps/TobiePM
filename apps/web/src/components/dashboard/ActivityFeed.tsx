@@ -48,7 +48,7 @@ export function ActivityFeed() {
             timestamp: new Date(Date.now() - 1000 * 60 * 60).toISOString(),
             eventType: 'TASK_CREATED',
             details: { title: 'Script Drafting' },
-            user: { name: 'AntiGravity AI' }
+            user: { name: 'Tobie Assistant' }
         },
         {
             id: '3',
