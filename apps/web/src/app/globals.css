@@ -1,0 +1,115 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Tobie Brand Colors */
+  --background: #0F0F10;
+  --foreground: #FFFFFF;
+  --text-secondary: #BFC3C9;
+  --brand-blue: #3D85C6;
+  --brand-green: #4CAF50;
+  --brand-red: #E5593D;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Glassmorphism utility */
+@layer utilities {
+  .glass {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .glass-hover:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
+  }
+}
+
+/* Card styles */
+@layer components {
+  .card {
+    @apply glass rounded-xl p-6;
+  }
+
+  .card-hover {
+    @apply card glass-hover transition-all duration-200;
+  }
+
+  .btn-primary {
+    @apply bg-primary-600 hover:bg-primary-500 text-white px-4 py-2 rounded-lg font-medium transition-colors;
+  }
+
+  .btn-secondary {
+    @apply glass glass-hover text-white px-4 py-2 rounded-lg font-medium transition-all;
+  }
+
+  .btn-ghost {
+    @apply text-gray-400 hover:text-white hover:bg-white/5 px-4 py-2 rounded-lg font-medium transition-all;
+  }
+
+  .input {
+    @apply w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all;
+  }
+
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+
+  .badge-gray {
+    @apply bg-gray-500/20 text-gray-300;
+  }
+
+  .badge-blue {
+    @apply bg-blue-500/20 text-blue-300;
+  }
+
+  .badge-green {
+    @apply bg-green-500/20 text-green-300;
+  }
+
+  .badge-amber {
+    @apply bg-amber-500/20 text-amber-300;
+  }
+
+  .badge-red {
+    @apply bg-red-500/20 text-red-300;
+  }
+}
+
+/* Safe area utilities for mobile notches */
+@layer utilities {
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top);
+  }
+}

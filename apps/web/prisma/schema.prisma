@@ -1,0 +1,383 @@
+// Prisma Schema for Tobie Command Center
+// Database: SQLite (local dev) / PostgreSQL (production)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// AUTHENTICATION & AUTHORIZATION
+// ============================================================================
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  avatarUrl    String?
+
+  // Role & Permissions
+  role   Role   @relation(fields: [roleId], references: [id])
+  roleId String
+
+  // Timestamps
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  lastLoginAt DateTime?
+
+  // Relations
+  assignedTasks   Task[]         @relation("TaskAssignee")
+  createdTasks    Task[]         @relation("TaskCreator")
+  createdProjects Project[]      @relation("ProjectCreator")
+  notifications   Notification[]
+  auditLogs       AuditLog[]     @relation("AuditUser")
+  chatTranscripts ChatTranscript[] @relation("UserChats")
+  createdVideos   VideoAsset[]   @relation("CreatedVideos")
+  videoComments   VideoComment[] @relation("AuthoredComments")
+  resolvedComments VideoComment[] @relation("ResolvedComments")
+
+  @@index([email])
+  @@index([roleId])
+}
+
+model Role {
+  id          String  @id @default(cuid())
+  name        String  @unique
+  description String?
+
+  // Relations
+  users       User[]
+  permissions RolePermission[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Permission {
+  id          String  @id @default(cuid())
+  code        String  @unique
+  name        String
+  description String?
+  category    String
+
+  // Relations
+  roles RolePermission[]
+
+  @@index([category])
+}
+
+model RolePermission {
+  id           String     @id @default(cuid())
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  roleId       String
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  permissionId String
+
+  @@unique([roleId, permissionId])
+  @@index([roleId])
+  @@index([permissionId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  createdAt    DateTime @default(now())
+
+  @@index([userId])
+  @@index([expires])
+}
+
+// ============================================================================
+// PROJECTS & TASKS
+// ============================================================================
+
+model Project {
+  id          String        @id @default(cuid())
+  name        String
+  description String?
+  status      String        @default("ACTIVE")
+  template    String?
+  startDate   DateTime?
+  dueDate     DateTime?
+  completedAt DateTime?
+
+  // Creator
+  creator   User   @relation("ProjectCreator", fields: [creatorId], references: [id])
+  creatorId String
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  tasks           Task[]
+  files           FileAttachment[]
+  chatTranscripts ChatTranscript[] @relation("ProjectChats")
+  videos          VideoAsset[]     @relation("ProjectVideos")
+
+  @@index([status])
+  @@index([creatorId])
+  @@index([dueDate])
+}
+
+model Task {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  status      String   @default("TODO")
+  priority    Int      @default(0)
+
+  // Project association
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId String
+
+  // Assignment
+  assignee   User?   @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  assigneeId String?
+
+  // Creator
+  creator   User   @relation("TaskCreator", fields: [creatorId], references: [id])
+  creatorId String
+
+  // Dates
+  dueDate     DateTime?
+  startDate   DateTime?
+  completedAt DateTime?
+
+  // Ordering
+  sortOrder Int @default(0)
+
+  // Dependencies
+  blockedBy TaskDependency[] @relation("BlockedTask")
+  blocks    TaskDependency[] @relation("BlockingTask")
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  files FileAttachment[]
+
+  @@index([projectId])
+  @@index([assigneeId])
+  @@index([status])
+  @@index([dueDate])
+  @@index([priority])
+}
+
+model TaskDependency {
+  id String @id @default(cuid())
+
+  // The task that is blocked
+  blockedTask   Task   @relation("BlockedTask", fields: [blockedTaskId], references: [id], onDelete: Cascade)
+  blockedTaskId String
+
+  // The task that must complete first
+  blockingTask   Task   @relation("BlockingTask", fields: [blockingTaskId], references: [id], onDelete: Cascade)
+  blockingTaskId String
+
+  @@unique([blockedTaskId, blockingTaskId])
+  @@index([blockedTaskId])
+  @@index([blockingTaskId])
+}
+
+// ============================================================================
+// PROJECT TEMPLATES
+// ============================================================================
+
+model ProjectTemplate {
+  id          String @id @default(cuid())
+  name        String @unique
+  description String?
+
+  // Template tasks
+  taskTemplates TaskTemplate[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model TaskTemplate {
+  id              String  @id @default(cuid())
+  title           String
+  description     String?
+  defaultDuration Int
+  sortOrder       Int     @default(0)
+  defaultAssignee String?
+  dependsOn       String  @default("[]") // JSON array of TaskTemplate IDs
+
+  // Template
+  template   ProjectTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  templateId String
+
+  @@index([templateId])
+}
+
+// ============================================================================
+// FILES
+// ============================================================================
+
+model FileAttachment {
+  id          String  @id @default(cuid())
+  localPath   String?
+  externalUrl String?
+  filename    String
+  mimeType    String?
+  sizeBytes   Int?
+
+  // Associations
+  project   Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId String?
+
+  task   Task?   @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  taskId String?
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([projectId])
+  @@index([taskId])
+  @@index([localPath])
+}
+
+// ============================================================================
+// NOTIFICATIONS
+// ============================================================================
+
+model Notification {
+  id         String  @id @default(cuid())
+  type       String
+  title      String
+  message    String
+  read       Boolean @default(false)
+  entityType String?
+  entityId   String?
+
+  // Recipient
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, read])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// AUDIT LOG
+// ============================================================================
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  timestamp   DateTime @default(now())
+  eventType   String
+  eventSource String
+
+  // Actor
+  user   User?   @relation("AuditUser", fields: [userId], references: [id])
+  userId String?
+
+  // Event details (JSON)
+  details String
+
+  // Entity reference
+  entityType String?
+  entityId   String?
+
+  // Integrity
+  checksum String?
+
+  @@index([eventType])
+  @@index([userId])
+  @@index([timestamp])
+  @@index([entityType, entityId])
+}
+
+// ============================================================================
+// SETTINGS
+// ============================================================================
+
+model Setting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt
+}
+
+// ============================================================================
+// AI INTEGRATION (Future Features)
+// ============================================================================
+
+model ChatTranscript {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation("UserChats", fields: [userId], references: [id], onDelete: Cascade)
+  projectId String?
+  project   Project? @relation("ProjectChats", fields: [projectId], references: [id], onDelete: SetNull)
+  messages  String   // JSON array: [{role, content, timestamp}]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([projectId])
+  @@index([createdAt])
+}
+
+// ============================================================================
+// VIDEO REVIEW PORTAL (Future Features)
+// ============================================================================
+
+model VideoAsset {
+  id           String         @id @default(cuid())
+  projectId    String
+  project      Project        @relation("ProjectVideos", fields: [projectId], references: [id], onDelete: Cascade)
+  title        String
+  publicToken  String?        @unique @default(cuid()) // For client review access
+  version      Int            @default(1)
+  fileUrl      String         // Supabase storage URL
+  thumbnailUrl String?        // Optional thumbnail
+  duration     Float?         // Duration in seconds
+  status       String         @default("PENDING") // PENDING, UNDER_REVIEW, APPROVED
+  createdBy    String
+  creator      User           @relation("CreatedVideos", fields: [createdBy], references: [id])
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  // Relations
+  comments     VideoComment[]
+
+  @@unique([projectId, version])
+  @@index([projectId])
+  @@index([status])
+  @@index([createdBy])
+  @@index([publicToken])
+}
+
+model VideoComment {
+  id           String     @id @default(cuid())
+  videoId      String
+  video        VideoAsset @relation(fields: [videoId], references: [id], onDelete: Cascade)
+  timestamp    Float      // Time in seconds (e.g., 45.5 for 0:45.5)
+  content      String     // The feedback text
+  authorId     String
+  author       User       @relation("AuthoredComments", fields: [authorId], references: [id])
+  isOutOfScope Boolean    @default(false) // AI-flagged as out of scope
+  resolved     Boolean    @default(false)
+  resolvedBy   String?
+  resolver     User?      @relation("ResolvedComments", fields: [resolvedBy], references: [id])
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@index([videoId])
+  @@index([authorId])
+  @@index([timestamp])
+  @@index([resolved])
+}
+

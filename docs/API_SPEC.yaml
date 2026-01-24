@@ -1,0 +1,1280 @@
+openapi: 3.0.3
+info:
+  title: Tobie Command Center API
+  description: |
+    REST API for the Tobie Command Center web portal and desktop agent.
+    
+    ## Authentication
+    All endpoints except `/api/auth/*` require a valid session cookie.
+    
+    ## Authorization
+    Endpoints check user permissions based on RBAC. Unauthorized requests return 403.
+    
+    ## Rate Limiting
+    - Authentication endpoints: 5 requests per 15 minutes per IP
+    - All other endpoints: 100 requests per minute per user
+  version: 1.0.0
+  contact:
+    name: Tobie Team
+    email: josh@tobie.team
+
+servers:
+  - url: http://localhost:3000/api
+    description: Local development
+  - url: https://tobie-command.vercel.app/api
+    description: Production
+
+tags:
+  - name: Auth
+    description: Authentication endpoints
+  - name: Users
+    description: User management (Admin)
+  - name: Roles
+    description: Role and permission management (Admin)
+  - name: Projects
+    description: Project CRUD
+  - name: Tasks
+    description: Task CRUD and status updates
+  - name: Files
+    description: File attachment management
+  - name: Notifications
+    description: Notification management
+  - name: Audit
+    description: Audit log access
+  - name: Sync
+    description: Desktop agent sync endpoints
+  - name: Recommendations
+    description: Task recommendations and bottleneck detection
+
+paths:
+  # ============================================================================
+  # AUTHENTICATION
+  # ============================================================================
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login with email and password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  format: password
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Invalid credentials
+        '429':
+          description: Too many attempts, try again later
+
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Logout and invalidate session
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Logout successful
+        '401':
+          description: Not authenticated
+
+  /auth/me:
+    get:
+      tags: [Auth]
+      summary: Get current user info
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Not authenticated
+
+  # ============================================================================
+  # USERS
+  # ============================================================================
+  /users:
+    get:
+      tags: [Users]
+      summary: List all users
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: includeRole
+          in: query
+          schema:
+            type: boolean
+            default: true
+      responses:
+        '200':
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        '403':
+          description: Requires users.list permission
+
+    post:
+      tags: [Users]
+      summary: Create a new user (Admin)
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+      responses:
+        '201':
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Validation error
+        '403':
+          description: Requires users.create permission
+        '409':
+          description: Email already exists
+
+  /users/{id}:
+    get:
+      tags: [Users]
+      summary: Get user by ID
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          description: User not found
+
+    patch:
+      tags: [Users]
+      summary: Update user (Admin or self)
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+      responses:
+        '200':
+          description: User updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '403':
+          description: Insufficient permissions
+        '404':
+          description: User not found
+
+  /users/{id}/role:
+    put:
+      tags: [Users]
+      summary: Assign role to user (Admin)
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [roleId]
+              properties:
+                roleId:
+                  type: string
+      responses:
+        '200':
+          description: Role assigned
+        '403':
+          description: Requires users.assignRole permission
+
+  # ============================================================================
+  # ROLES & PERMISSIONS
+  # ============================================================================
+  /roles:
+    get:
+      tags: [Roles]
+      summary: List all roles
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: List of roles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Role'
+
+    post:
+      tags: [Roles]
+      summary: Create a new role (Admin)
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRoleRequest'
+      responses:
+        '201':
+          description: Role created
+        '403':
+          description: Requires roles.create permission
+
+  /roles/{id}/permissions:
+    put:
+      tags: [Roles]
+      summary: Update role permissions (Admin)
+      description: Replace all permissions for a role with the provided list
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [permissionIds]
+              properties:
+                permissionIds:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: Permissions updated
+        '403':
+          description: Requires roles.editPermissions permission
+
+  /permissions:
+    get:
+      tags: [Roles]
+      summary: List all available permissions
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: List of permissions grouped by category
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Permission'
+
+  # ============================================================================
+  # PROJECTS
+  # ============================================================================
+  /projects:
+    get:
+      tags: [Projects]
+      summary: List projects
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/ProjectStatus'
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: List of projects
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Project'
+                  total:
+                    type: integer
+
+    post:
+      tags: [Projects]
+      summary: Create a new project
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProjectRequest'
+      responses:
+        '201':
+          description: Project created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        '403':
+          description: Requires projects.create permission
+
+  /projects/{id}:
+    get:
+      tags: [Projects]
+      summary: Get project details
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: includeTasks
+          in: query
+          schema:
+            type: boolean
+            default: true
+      responses:
+        '200':
+          description: Project details with tasks
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectWithTasks'
+        '404':
+          description: Project not found
+
+    patch:
+      tags: [Projects]
+      summary: Update project
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProjectRequest'
+      responses:
+        '200':
+          description: Project updated
+
+    delete:
+      tags: [Projects]
+      summary: Delete project (Archive)
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Project archived
+        '403':
+          description: Requires projects.delete permission
+
+  /projects/templates:
+    get:
+      tags: [Projects]
+      summary: List available project templates
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: List of templates
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProjectTemplate'
+
+  # ============================================================================
+  # TASKS
+  # ============================================================================
+  /tasks:
+    get:
+      tags: [Tasks]
+      summary: List tasks with filters
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: projectId
+          in: query
+          schema:
+            type: string
+        - name: assigneeId
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/TaskStatus'
+        - name: dueWithin
+          in: query
+          description: Tasks due within N days
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of tasks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Task'
+
+    post:
+      tags: [Tasks]
+      summary: Create a new task
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTaskRequest'
+      responses:
+        '201':
+          description: Task created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '403':
+          description: Requires tasks.create permission
+
+  /tasks/{id}:
+    get:
+      tags: [Tasks]
+      summary: Get task details
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Task details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskWithDependencies'
+
+    patch:
+      tags: [Tasks]
+      summary: Update task
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTaskRequest'
+      responses:
+        '200':
+          description: Task updated
+
+    delete:
+      tags: [Tasks]
+      summary: Delete task
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Task deleted
+        '403':
+          description: Requires tasks.delete permission
+
+  /tasks/{id}/status:
+    patch:
+      tags: [Tasks]
+      summary: Update task status
+      description: Shorthand for status updates, checks dependencies
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  $ref: '#/components/schemas/TaskStatus'
+      responses:
+        '200':
+          description: Status updated
+        '409':
+          description: Cannot complete - blocked by dependencies
+
+  /tasks/reorder:
+    post:
+      tags: [Tasks]
+      summary: Reorder tasks (Kanban drag-drop)
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [taskId, newStatus, newSortOrder]
+              properties:
+                taskId:
+                  type: string
+                newStatus:
+                  $ref: '#/components/schemas/TaskStatus'
+                newSortOrder:
+                  type: integer
+      responses:
+        '200':
+          description: Tasks reordered
+
+  # ============================================================================
+  # FILES
+  # ============================================================================
+  /files:
+    post:
+      tags: [Files]
+      summary: Attach file to project or task
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateFileAttachmentRequest'
+      responses:
+        '201':
+          description: File attached
+
+  /files/{id}:
+    delete:
+      tags: [Files]
+      summary: Remove file attachment
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Attachment removed
+
+  # ============================================================================
+  # NOTIFICATIONS
+  # ============================================================================
+  /notifications:
+    get:
+      tags: [Notifications]
+      summary: Get user's notifications
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: unreadOnly
+          in: query
+          schema:
+            type: boolean
+            default: false
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: List of notifications
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Notification'
+                  unreadCount:
+                    type: integer
+
+  /notifications/read:
+    post:
+      tags: [Notifications]
+      summary: Mark notifications as read
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                notificationIds:
+                  type: array
+                  items:
+                    type: string
+                all:
+                  type: boolean
+                  description: If true, marks all notifications as read
+      responses:
+        '200':
+          description: Notifications marked as read
+
+  # ============================================================================
+  # AUDIT LOGS
+  # ============================================================================
+  /audit:
+    get:
+      tags: [Audit]
+      summary: Query audit logs (Admin)
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: eventType
+          in: query
+          schema:
+            type: string
+        - name: userId
+          in: query
+          schema:
+            type: string
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: to
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+            maximum: 200
+      responses:
+        '200':
+          description: Audit log entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AuditLog'
+        '403':
+          description: Requires audit.view permission
+
+  # ============================================================================
+  # RECOMMENDATIONS
+  # ============================================================================
+  /recommendations/today:
+    get:
+      tags: [Recommendations]
+      summary: Get today's priority tasks
+      security:
+        - cookieAuth: []
+      responses:
+        '200':
+          description: Today's priorities
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  priorities:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TaskWithReason'
+                  bottlenecks:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/BottleneckWarning'
+                  nextActions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/RecommendedAction'
+
+  # ============================================================================
+  # SYNC (Desktop Agent)
+  # ============================================================================
+  /sync/pull:
+    post:
+      tags: [Sync]
+      summary: Pull changes from server (Desktop Agent)
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                lastSyncedAt:
+                  type: string
+                  format: date-time
+      responses:
+        '200':
+          description: Changes since last sync
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SyncPullResponse'
+
+  /sync/push:
+    post:
+      tags: [Sync]
+      summary: Push changes to server (Desktop Agent)
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SyncPushRequest'
+      responses:
+        '200':
+          description: Changes accepted
+        '409':
+          description: Conflict detected, needs resolution
+
+# ============================================================================
+# COMPONENTS
+# ============================================================================
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: next-auth.session-token
+
+  schemas:
+    # Auth
+    AuthResponse:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+        expiresAt:
+          type: string
+          format: date-time
+
+    # Users
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        name:
+          type: string
+        avatarUrl:
+          type: string
+          nullable: true
+        role:
+          $ref: '#/components/schemas/Role'
+        createdAt:
+          type: string
+          format: date-time
+
+    CreateUserRequest:
+      type: object
+      required: [email, password, name, roleId]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+        name:
+          type: string
+        roleId:
+          type: string
+
+    UpdateUserRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        avatarUrl:
+          type: string
+        password:
+          type: string
+          minLength: 8
+
+    # Roles & Permissions
+    Role:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        permissions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Permission'
+
+    CreateRoleRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        permissionIds:
+          type: array
+          items:
+            type: string
+
+    Permission:
+      type: object
+      properties:
+        id:
+          type: string
+        code:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+
+    # Projects
+    ProjectStatus:
+      type: string
+      enum: [ACTIVE, PAUSED, COMPLETED, ARCHIVED]
+
+    Project:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        status:
+          $ref: '#/components/schemas/ProjectStatus'
+        startDate:
+          type: string
+          format: date
+        dueDate:
+          type: string
+          format: date
+        createdAt:
+          type: string
+          format: date-time
+
+    ProjectWithTasks:
+      allOf:
+        - $ref: '#/components/schemas/Project'
+        - type: object
+          properties:
+            tasks:
+              type: array
+              items:
+                $ref: '#/components/schemas/Task'
+            progress:
+              type: object
+              properties:
+                total:
+                  type: integer
+                completed:
+                  type: integer
+                percentage:
+                  type: number
+
+    CreateProjectRequest:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        templateId:
+          type: string
+          description: If provided, auto-generates tasks from template
+        startDate:
+          type: string
+          format: date
+        dueDate:
+          type: string
+          format: date
+
+    UpdateProjectRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        status:
+          $ref: '#/components/schemas/ProjectStatus'
+        startDate:
+          type: string
+          format: date
+        dueDate:
+          type: string
+          format: date
+
+    ProjectTemplate:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        taskCount:
+          type: integer
+
+    # Tasks
+    TaskStatus:
+      type: string
+      enum: [TODO, IN_PROGRESS, REVIEW, DONE, BLOCKED]
+
+    Task:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        status:
+          $ref: '#/components/schemas/TaskStatus'
+        priority:
+          type: integer
+        projectId:
+          type: string
+        assignee:
+          $ref: '#/components/schemas/User'
+        dueDate:
+          type: string
+          format: date
+        createdAt:
+          type: string
+          format: date-time
+
+    TaskWithDependencies:
+      allOf:
+        - $ref: '#/components/schemas/Task'
+        - type: object
+          properties:
+            blockedBy:
+              type: array
+              items:
+                $ref: '#/components/schemas/Task'
+            blocks:
+              type: array
+              items:
+                $ref: '#/components/schemas/Task'
+            files:
+              type: array
+              items:
+                $ref: '#/components/schemas/FileAttachment'
+
+    CreateTaskRequest:
+      type: object
+      required: [title, projectId]
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        projectId:
+          type: string
+        assigneeId:
+          type: string
+        dueDate:
+          type: string
+          format: date
+        blockedByTaskIds:
+          type: array
+          items:
+            type: string
+
+    UpdateTaskRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        status:
+          $ref: '#/components/schemas/TaskStatus'
+        priority:
+          type: integer
+        assigneeId:
+          type: string
+        dueDate:
+          type: string
+          format: date
+
+    # Files
+    FileAttachment:
+      type: object
+      properties:
+        id:
+          type: string
+        filename:
+          type: string
+        localPath:
+          type: string
+        externalUrl:
+          type: string
+        mimeType:
+          type: string
+        sizeBytes:
+          type: integer
+
+    CreateFileAttachmentRequest:
+      type: object
+      required: [filename]
+      properties:
+        filename:
+          type: string
+        localPath:
+          type: string
+        externalUrl:
+          type: string
+        projectId:
+          type: string
+        taskId:
+          type: string
+
+    # Notifications
+    Notification:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum: [TASK_ASSIGNED, TASK_DUE_SOON, TASK_OVERDUE, PROJECT_CREATED, BOTTLENECK_DETECTED, FILE_OPERATION_COMPLETE, SYSTEM]
+        title:
+          type: string
+        message:
+          type: string
+        read:
+          type: boolean
+        entityType:
+          type: string
+        entityId:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    # Audit
+    AuditLog:
+      type: object
+      properties:
+        id:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        eventType:
+          type: string
+        eventSource:
+          type: string
+        userId:
+          type: string
+        details:
+          type: object
+        checksum:
+          type: string
+
+    # Recommendations
+    TaskWithReason:
+      allOf:
+        - $ref: '#/components/schemas/Task'
+        - type: object
+          properties:
+            reason:
+              type: string
+              description: Why this task is a priority
+
+    BottleneckWarning:
+      type: object
+      properties:
+        task:
+          $ref: '#/components/schemas/Task'
+        blockedTasksCount:
+          type: integer
+        severity:
+          type: string
+          enum: [low, medium, high]
+        message:
+          type: string
+
+    RecommendedAction:
+      type: object
+      properties:
+        action:
+          type: string
+        taskId:
+          type: string
+        reason:
+          type: string
+
+    # Sync
+    SyncPullResponse:
+      type: object
+      properties:
+        projects:
+          type: array
+          items:
+            $ref: '#/components/schemas/Project'
+        tasks:
+          type: array
+          items:
+            $ref: '#/components/schemas/Task'
+        serverTime:
+          type: string
+          format: date-time
+
+    SyncPushRequest:
+      type: object
+      properties:
+        tasks:
+          type: array
+          items:
+            $ref: '#/components/schemas/UpdateTaskRequest'
+        fileOperations:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                enum: [CREATE, MOVE, RENAME, DELETE]
+              path:
+                type: string
+              newPath:
+                type: string
+              approved:
+                type: boolean
+              executedAt:
+                type: string
+                format: date-time

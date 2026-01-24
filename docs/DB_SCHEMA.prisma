@@ -1,0 +1,375 @@
+// Prisma Schema for Tobie Command Center
+// Database: SQLite (local dev) / PostgreSQL (production)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite" // Change to "postgresql" for production
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// AUTHENTICATION & AUTHORIZATION
+// ============================================================================
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  avatarUrl    String?
+  
+  // Role & Permissions
+  role         Role     @relation(fields: [roleId], references: [id])
+  roleId       String
+  
+  // Timestamps
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  lastLoginAt  DateTime?
+  
+  // Relations
+  assignedTasks    Task[]         @relation("TaskAssignee")
+  createdTasks     Task[]         @relation("TaskCreator")
+  createdProjects  Project[]      @relation("ProjectCreator")
+  notifications    Notification[]
+  auditLogs        AuditLog[]     @relation("AuditUser")
+  
+  @@index([email])
+  @@index([roleId])
+}
+
+model Role {
+  id          String       @id @default(cuid())
+  name        String       @unique  // e.g., "Admin", "Designer"
+  description String?
+  
+  // Relations
+  users       User[]
+  permissions RolePermission[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Permission {
+  id          String   @id @default(cuid())
+  code        String   @unique  // e.g., "projects.create", "tasks.edit"
+  name        String            // Human-readable name
+  description String?
+  category    String            // For grouping in UI: "Projects", "Tasks", "Admin"
+  
+  // Relations
+  roles       RolePermission[]
+  
+  @@index([category])
+}
+
+model RolePermission {
+  id           String     @id @default(cuid())
+  role         Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  roleId       String
+  permission   Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+  permissionId String
+  
+  @@unique([roleId, permissionId])
+  @@index([roleId])
+  @@index([permissionId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  createdAt    DateTime @default(now())
+  
+  @@index([userId])
+  @@index([expires])
+}
+
+// ============================================================================
+// PROJECTS & TASKS
+// ============================================================================
+
+model Project {
+  id          String        @id @default(cuid())
+  name        String
+  description String?
+  status      ProjectStatus @default(ACTIVE)
+  
+  // Template reference (for auto-generating tasks)
+  template    String?       // e.g., "benefits-video"
+  
+  // Dates
+  startDate   DateTime?
+  dueDate     DateTime?
+  completedAt DateTime?
+  
+  // Creator
+  creator     User          @relation("ProjectCreator", fields: [creatorId], references: [id])
+  creatorId   String
+  
+  // Timestamps
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  
+  // Relations
+  tasks       Task[]
+  files       FileAttachment[]
+  
+  @@index([status])
+  @@index([creatorId])
+  @@index([dueDate])
+}
+
+enum ProjectStatus {
+  ACTIVE
+  PAUSED
+  COMPLETED
+  ARCHIVED
+}
+
+model Task {
+  id          String     @id @default(cuid())
+  title       String
+  description String?
+  status      TaskStatus @default(TODO)
+  priority    Int        @default(0)  // Higher = more urgent
+  
+  // Project association
+  project     Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId   String
+  
+  // Assignment
+  assignee    User?      @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  assigneeId  String?
+  
+  // Creator
+  creator     User       @relation("TaskCreator", fields: [creatorId], references: [id])
+  creatorId   String
+  
+  // Dates
+  dueDate     DateTime?
+  startDate   DateTime?
+  completedAt DateTime?
+  
+  // Ordering (for manual sorting in Kanban)
+  sortOrder   Int        @default(0)
+  
+  // Dependencies
+  blockedBy   TaskDependency[] @relation("BlockedTask")
+  blocks      TaskDependency[] @relation("BlockingTask")
+  
+  // Timestamps
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  
+  // Relations
+  files       FileAttachment[]
+  
+  @@index([projectId])
+  @@index([assigneeId])
+  @@index([status])
+  @@index([dueDate])
+  @@index([priority])
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  REVIEW
+  DONE
+  BLOCKED
+}
+
+model TaskDependency {
+  id             String @id @default(cuid())
+  
+  // The task that is blocked
+  blockedTask    Task   @relation("BlockedTask", fields: [blockedTaskId], references: [id], onDelete: Cascade)
+  blockedTaskId  String
+  
+  // The task that must complete first
+  blockingTask   Task   @relation("BlockingTask", fields: [blockingTaskId], references: [id], onDelete: Cascade)
+  blockingTaskId String
+  
+  @@unique([blockedTaskId, blockingTaskId])
+  @@index([blockedTaskId])
+  @@index([blockingTaskId])
+}
+
+// ============================================================================
+// PROJECT TEMPLATES
+// ============================================================================
+
+model ProjectTemplate {
+  id          String         @id @default(cuid())
+  name        String         @unique  // e.g., "Benefits Video Project"
+  description String?
+  
+  // Template tasks
+  taskTemplates TaskTemplate[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model TaskTemplate {
+  id               String          @id @default(cuid())
+  title            String
+  description      String?
+  defaultDuration  Int             // Days from project start
+  sortOrder        Int             @default(0)
+  defaultAssignee  String?         // Role name, not user ID
+  
+  // Template
+  template         ProjectTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  templateId       String
+  
+  // Dependencies within template
+  dependsOn        String[]        // Array of TaskTemplate IDs
+  
+  @@index([templateId])
+}
+
+// ============================================================================
+// FILES
+// ============================================================================
+
+model FileAttachment {
+  id          String   @id @default(cuid())
+  
+  // Local file path (desktop agent indexed)
+  localPath   String?
+  
+  // Optional external URL
+  externalUrl String?
+  
+  // File metadata
+  filename    String
+  mimeType    String?
+  sizeBytes   Int?
+  
+  // Associations (polymorphic via nullable FKs)
+  project     Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId   String?
+  
+  task        Task?    @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  taskId      String?
+  
+  // Timestamps
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([projectId])
+  @@index([taskId])
+  @@index([localPath])
+}
+
+// ============================================================================
+// NOTIFICATIONS
+// ============================================================================
+
+model Notification {
+  id        String           @id @default(cuid())
+  type      NotificationType
+  title     String
+  message   String
+  read      Boolean          @default(false)
+  
+  // Optional link to entity
+  entityType String?         // "project", "task"
+  entityId   String?
+  
+  // Recipient
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  
+  createdAt DateTime         @default(now())
+  
+  @@index([userId, read])
+  @@index([createdAt])
+}
+
+enum NotificationType {
+  TASK_ASSIGNED
+  TASK_DUE_SOON
+  TASK_OVERDUE
+  PROJECT_CREATED
+  BOTTLENECK_DETECTED
+  FILE_OPERATION_COMPLETE
+  SYSTEM
+}
+
+// ============================================================================
+// AUDIT LOG
+// ============================================================================
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  timestamp  DateTime @default(now())
+  
+  // Event classification
+  eventType  String   // "LOGIN", "FILE_MOVE", "TASK_UPDATE", etc.
+  eventSource String  // "web-portal", "desktop-agent", "system"
+  
+  // Actor (nullable for system events)
+  user       User?    @relation("AuditUser", fields: [userId], references: [id])
+  userId     String?
+  
+  // Event details (JSON)
+  details    String   // JSON stringified details
+  
+  // Optional entity reference
+  entityType String?
+  entityId   String?
+  
+  // Integrity
+  checksum   String?  // SHA-256 of event data
+  
+  // Note: This table is APPEND-ONLY in application logic
+  // No UPDATE or DELETE operations should be performed
+  
+  @@index([eventType])
+  @@index([userId])
+  @@index([timestamp])
+  @@index([entityType, entityId])
+}
+
+// ============================================================================
+// SETTINGS (Desktop Agent)
+// ============================================================================
+
+model Setting {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String // JSON stringified
+  
+  updatedAt DateTime @updatedAt
+}
+
+// ============================================================================
+// FILE INDEX (Desktop Agent Local)
+// ============================================================================
+
+model FileIndex {
+  id          String   @id @default(cuid())
+  
+  // File info
+  path        String   @unique
+  filename    String
+  extension   String?
+  sizeBytes   BigInt
+  
+  // Timestamps
+  modifiedAt  DateTime
+  indexedAt   DateTime @default(now())
+  
+  // For quick search
+  @@index([filename])
+  @@index([extension])
+  @@index([modifiedAt])
+}
