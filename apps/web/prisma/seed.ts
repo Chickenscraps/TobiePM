@@ -345,6 +345,25 @@ async function main() {
         ],
     });
 
+    // ============================================================================
+    // VIDEO ASSETS
+    // ============================================================================
+    console.log('Creating sample video asset...');
+
+    await prisma.videoAsset.upsert({
+        where: { publicToken: 'sample-video-token' },
+        update: {},
+        create: {
+            title: 'Q1 Motion Graphics Draft',
+            projectId: demoProject.id,
+            publicToken: 'sample-video-token',
+            version: 1,
+            fileUrl: '/samples/motion_example.mp4',
+            status: 'UNDER_REVIEW',
+            createdBy: josh.id,
+        },
+    });
+
     console.log('✅ Database seeded successfully!');
     console.log('\nTest accounts:');
     console.log('  Admin: josh@tobie.team / TobieAdmin2026!');
