@@ -1,7 +1,7 @@
 # Architecture Document: Tobie Command Center
 
-**Version:** 1.0  
-**Date:** January 22, 2026  
+**Version:** 1.1  
+**Date:** January 23, 2026  
 **Architect:** Josh  
 
 ---
@@ -110,10 +110,10 @@ tobie-command-center/
 
 **Key Decisions:**
 - **App Router**: React Server Components for performance
-- **API Routes**: REST endpoints for CRUD + sync
+- **API Routes**: Next.js 15 App Router endpoints
 - **NextAuth.js v5**: Credential provider, JWT sessions
-- **Prisma**: Type-safe ORM, migrations
-- **PostgreSQL**: Supabase free tier for MVP
+- **Prisma v7**: Type-safe ORM with automated build-time migrations
+- **PostgreSQL**: Supabase (Cloud Database)
 
 ### 2.3 Desktop Agent Architecture
 
@@ -388,19 +388,14 @@ interface Notification {
 
 | Layer | Technology | Justification |
 |-------|------------|---------------|
-| **Web Frontend** | Next.js 14 (App Router) | RSC, TypeScript, popular |
-| **Web Styling** | TailwindCSS | Rapid development, utility-first |
-| **Web Auth** | NextAuth.js v5 | Flexible, credential provider |
-| **Web API** | Next.js API Routes | Colocated, serverless-ready |
+| **Web Frontend** | Next.js 15 (App Router) | RSC, Server Actions, Stability |
+| **Web Styling** | Vanilla CSS + Tailwind | Custom Tobie design system |
+| **Web Auth** | NextAuth.js v5 (Beta) | Flexible, middleware-based |
+| **AI Layer** | Google Gemini 1.5 | Cost-effective, large context window |
 | **Desktop Framework** | Tauri v2 | Secure, small, performant |
-| **Desktop Frontend** | React + Vite | Shared knowledge |
-| **Desktop Backend** | Rust | Performance, safety |
-| **Database (Cloud)** | PostgreSQL (Supabase) | Free tier, reliable |
-| **Database (Local)** | SQLite | Embedded, zero-config |
-| **ORM** | Prisma | Type-safe, migrations |
-| **Monorepo** | pnpm + Turborepo | Fast, efficient |
-| **Voice (Local)** | whisper-rs | Local transcription |
-| **Notifications** | notify-rust | Native OS |
+| **Database (Cloud)** | PostgreSQL (Supabase) | Scalable, reliable |
+| **Database local** | Prisma v7 / SQLite | Modern ORM patterns |
+| **Notifications** | Native + In-app | Cross-platform reach |
 
 ---
 
@@ -414,7 +409,7 @@ interface Notification {
 │                                                                  │
 │  Web Portal:                                                     │
 │  ┌─────────────────────────────────────────────────┐            │
-│  │ Vercel (Free Tier)                              │            │
+│  │ Netlify (Production)                             │            │
 │  │ - Automatic HTTPS                               │            │
 │  │ - Edge functions                                │            │
 │  │ - Preview deployments                           │            │
