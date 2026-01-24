@@ -29,7 +29,7 @@ export class ScopeGuardian {
         });
     }
 
-    async checkScope(userRequest: string, scopeContext: string, previousSignature?: string): Promise<ScopeCheckResponse> {
+    async checkScope(userRequest: string, scopeContext: string, _previousSignature?: string): Promise<ScopeCheckResponse> {
         const systemPrompt = `
         You are the Scope Guardian for this project. 
         Your goal is to strictly enforce the SOW (Statement of Work).

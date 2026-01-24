@@ -1,8 +1,23 @@
 'use client';
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import ReactPlayer from 'react-player';
+import ReactPlayerLib from 'react-player';
 import * as fabric from 'fabric'; // v6/v7 import style, check version installed
+
+// Fix for strict type checking in Next.js 15 / React 19 environments
+// Defining explicit props interface since library types are failing to export correctly in this context
+const ReactPlayer = ReactPlayerLib as unknown as React.ComponentType<{
+    url: string;
+    width?: string | number;
+    height?: string | number;
+    playing?: boolean;
+    onPlay?: () => void;
+    onPause?: () => void;
+    controls?: boolean;
+    className?: string;
+    style?: React.CSSProperties;
+    ref?: any;
+}>;
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -18,12 +33,13 @@ function cn(...inputs: (string | undefined | null | false)[]) {
 }
 
 export function VideoAnnotationPlayer({
-    assetId,
+    // assetId is prepared for future annotation fetching
+    assetId: _assetId,
     videoUrl,
     className,
 }: VideoAnnotationPlayerProps) {
     const containerRef = useRef<HTMLDivElement>(null);
-    const playerRef = useRef<ReactPlayer>(null);
+    const playerRef = useRef<any>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const fabricCanvasRef = useRef<fabric.Canvas | null>(null);
 
@@ -135,6 +151,7 @@ export function VideoAnnotationPlayer({
             className={cn("relative w-full aspect-video bg-black overflow-hidden", className)}
         >
             {/* Video Layer */}
+            {/* Video Layer */}
             <ReactPlayer
                 ref={playerRef}
                 url={videoUrl}
@@ -145,7 +162,7 @@ export function VideoAnnotationPlayer({
                 onPause={() => setIsPlaying(false)}
                 controls={true}
                 className="absolute top-0 left-0"
-                style={{ pointerEvents: 'auto' }} // Ensure controls are clickable if z-index issues arise
+                style={{ pointerEvents: 'auto' }}
             />
 
             {/* Canvas Layer - absolute overlay */}

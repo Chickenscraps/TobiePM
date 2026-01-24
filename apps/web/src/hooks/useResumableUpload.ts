@@ -83,8 +83,9 @@ export function useResumableUpload({ bucketName, endpoint, onSuccess, onError }:
         // Check if there are any previous uploads to continue.
         upload.findPreviousUploads().then(function (previousUploads) {
             // Found previous uploads so we select the first one. 
-            if (previousUploads.length) {
-                upload.resumeFromPreviousUpload(previousUploads[0]);
+            const previousUpload = previousUploads[0];
+            if (previousUpload) {
+                upload.resumeFromPreviousUpload(previousUpload);
             }
             // Start the upload
             upload.start();

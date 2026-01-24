@@ -4,14 +4,14 @@ import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 
 export async function GET(
-    req: NextRequest,
-    { params }: { params: { assetId: string } }
+    _req: NextRequest,
+    context: any
 ) {
     try {
         const session = await auth();
         if (!session) return new NextResponse("Unauthorized", { status: 401 });
 
-        const { assetId } = params;
+        const { assetId } = context.params;
 
         const annotations = await prisma.videoAnnotation.findMany({
             where: { assetId },
@@ -36,7 +36,7 @@ export async function GET(
 
 export async function POST(
     req: NextRequest,
-    { params }: { params: { assetId: string } }
+    context: any
 ) {
     try {
         const session = await auth();
@@ -45,7 +45,7 @@ export async function POST(
         }
 
         const userId = session.user.id;
-        const { assetId } = params;
+        const { assetId } = context.params;
 
         const body = await req.json();
         const { bucketIndex, timeCode, canvasData } = body;

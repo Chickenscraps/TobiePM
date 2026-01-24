@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useResumableUpload } from '@/hooks/useResumableUpload';
 // Icons would serve this well: import { Folder, File, Upload, ChevronRight, ChevronDown } from 'lucide-react';
 // Assuming Lucide is installed from deps list earlier.
@@ -15,8 +15,8 @@ interface FileNode {
 }
 
 export default function FileManager({ projectId, bucketName }: { projectId: string, bucketName: string }) {
-    const [files, setFiles] = useState<FileNode[]>([]);
-    const { progress, isUploading, isComplete, url, error, uploadFile } = useResumableUpload({
+    const [files] = useState<FileNode[]>([]);
+    const { progress, isUploading, error, uploadFile } = useResumableUpload({
         bucketName: bucketName,
         onSuccess: (url) => {
             // Trigger sync with backend to create FileNode record
@@ -25,8 +25,9 @@ export default function FileManager({ projectId, bucketName }: { projectId: stri
     });
 
     const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files?.length) {
-            uploadFile(e.target.files[0]);
+        const file = e.target.files?.[0];
+        if (file) {
+            uploadFile(file);
         }
     };
 

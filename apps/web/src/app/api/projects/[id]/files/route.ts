@@ -4,14 +4,14 @@ import { prisma } from '@/lib/prisma';
 import { auth } from '@/lib/auth';
 
 export async function GET(
-    req: NextRequest,
-    { params }: { params: { id: string } }
+    _req: NextRequest,
+    context: any
 ) {
     try {
         const session = await auth();
         if (!session) return new NextResponse("Unauthorized", { status: 401 });
 
-        const projectId = params.id;
+        const projectId = context.params.id;
 
         // Fetch flat list of files for the project
         // Note: The schema links files to projects via... wait, let's check schema.
@@ -72,14 +72,14 @@ export async function GET(
 
 export async function POST(
     req: NextRequest,
-    { params }: { params: { id: string } }
+    context: any
 ) {
     try {
         const session = await auth();
         if (!session) return new NextResponse("Unauthorized", { status: 401 });
 
-        const projectId = params.id;
-        const { url, name, size, type, parentId } = await req.json();
+        const projectId = context.params.id;
+        const { url, name, parentId } = await req.json();
 
         // Ensure root exists
         let effectiveParentId = parentId;
