@@ -15,7 +15,7 @@ const auditLogger = new InMemoryAuditLogger();
 
 export async function POST(request: NextRequest) {
     try {
-        const { message, history, projectId } = await request.json();
+        const { message, history } = await request.json();
 
         // 1. Select Provider
         const openAIKey = process.env.OPENAI_API_KEY;

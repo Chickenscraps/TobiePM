@@ -14,7 +14,7 @@ export async function GET(
         }
 
         // Check view permission
-        if (!hasPermission(user, 'files.view')) {
+        if (!await hasPermission('files.view')) {
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
 
@@ -50,8 +50,7 @@ export async function POST(
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        // Check upload permission
-        if (!hasPermission(user, 'files.attach')) { // Assuming 'attach' covers upload
+        if (!await hasPermission('files.attach')) { // Assuming 'attach' covers upload
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
 

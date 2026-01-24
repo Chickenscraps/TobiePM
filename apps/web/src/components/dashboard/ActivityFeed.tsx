@@ -71,31 +71,35 @@ export function ActivityFeed() {
             </h2>
 
             <div className="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar">
-                {displayLogs.map((log) => (
-                    <div key={log.id} className="flex gap-3 text-sm">
-                        <div className="flex-shrink-0 mt-1">
-                            <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-xs font-medium text-white">
-                                {log.user?.name?.[0] || '?'}
+                {isLoading ? (
+                    <div className="text-center text-gray-500 py-4">Loading activity...</div>
+                ) : (
+                    displayLogs.map((log) => (
+                        <div key={log.id} className="flex gap-3 text-sm">
+                            <div className="flex-shrink-0 mt-1">
+                                <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-xs font-medium text-white">
+                                    {log.user?.name?.[0] || '?'}
+                                </div>
+                            </div>
+                            <div>
+                                <p className="text-gray-200">
+                                    <span className="font-medium text-white">{log.user?.name || 'System'}</span>
+                                    {' '}
+                                    {formatEventType(log.eventType)}
+                                    {' '}
+                                    <span className="text-primary-300">
+                                        {log.details.title || log.details.name || log.details.filename || 'an item'}
+                                    </span>
+                                </p>
+                                <span className="text-xs text-gray-500">
+                                    {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    {' • '}
+                                    {new Date(log.timestamp).toLocaleDateString()}
+                                </span>
                             </div>
                         </div>
-                        <div>
-                            <p className="text-gray-200">
-                                <span className="font-medium text-white">{log.user?.name || 'System'}</span>
-                                {' '}
-                                {formatEventType(log.eventType)}
-                                {' '}
-                                <span className="text-primary-300">
-                                    {log.details.title || log.details.name || log.details.filename || 'an item'}
-                                </span>
-                            </p>
-                            <span className="text-xs text-gray-500">
-                                {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                {' • '}
-                                {new Date(log.timestamp).toLocaleDateString()}
-                            </span>
-                        </div>
-                    </div>
-                ))}
+                    ))
+                )}
             </div>
         </div>
     );

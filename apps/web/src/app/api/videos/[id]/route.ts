@@ -12,7 +12,7 @@ import { prisma } from '@/lib/prisma';
 import { storage } from '@/lib/storage'; // For future delete implementation
 
 export async function GET(
-    request: NextRequest,
+    _request: NextRequest,
     { params }: { params: Promise<{ id: string }> } // videoId
 ) {
     try {

@@ -41,7 +41,10 @@ export default function FileLibraryPage() {
 
         const formData = new FormData();
         for (let i = 0; i < fileList.length; i++) {
-            formData.append('files', fileList[i]);
+            const file = fileList.item(i);
+            if (file) {
+                formData.append('files', file);
+            }
         }
         formData.append('path', currentPath);
 
