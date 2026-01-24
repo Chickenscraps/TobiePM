@@ -95,7 +95,7 @@ async function main() {
     ];
 
     for (const code of designerPermissions) {
-        const perm = allPermissions.find((p) => p.code === code);
+        const perm = allPermissions.find((p: { code: string }) => p.code === code);
         if (perm) {
             await prisma.rolePermission.upsert({
                 where: {
