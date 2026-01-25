@@ -10,23 +10,23 @@ const globalForPrisma = globalThis as unknown as {
 // 3. Reuses global instance in dev (HMR safe).
 // 4. Proxies access so we only init on first Property Access (e.g. prisma.user.find...)
 
+import { Pool } from 'pg';
+import { PrismaPg } from '@prisma/adapter-pg';
+
 const getPrismaClient = () => {
-    // Check if we are in a build phase where we shouldn't connect
-    // const isBuildPhase = process.env.NEXT_PHASE === 'phase-production-build';
-    const hasDbUrl = !!process.env.DATABASE_URL;
-
-    // If we're building and don't have a DB, return a "Null Object" or throw a specific warning
-    // But typically, the proxy pattern avoids calling this function until a method is actually called.
-
-    if (!hasDbUrl) {
-        console.error('PRISMA FATAL: DATABASE_URL is missing from process.env');
+    // 1. Check Env
+    const connectionString = process.env.DATABASE_URL;
+    if (!connectionString) {
+        console.error('PRISMA FATAL: DATABASE_URL is missing');
         throw new Error('DATABASE_URL is missing');
     }
 
+    // 2. Initialize if needed
     if (!globalForPrisma.prisma) {
-        // Standard initialization relying on process.env.DATABASE_URL
-        // We already verified it exists above.
-        globalForPrisma.prisma = new PrismaClient();
+        console.log('PRISMA: Initializing with pg driver adapter...');
+        const pool = new Pool({ connectionString });
+        const adapter = new PrismaPg(pool);
+        globalForPrisma.prisma = new PrismaClient({ adapter });
     }
     return globalForPrisma.prisma;
 };
