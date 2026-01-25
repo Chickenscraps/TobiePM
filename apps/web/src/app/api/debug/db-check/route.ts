@@ -38,7 +38,9 @@ export async function GET() {
             message: error.message,
             name: error.name,
             // Check if it's a Prisma init/connection error
-            isPrismaError: error.name?.includes('Prisma')
+            isPrismaError: error.name?.includes('Prisma'),
+            fullError: error.toString(),
+            stack: error.stack?.split('\n').slice(0, 3).join('\n')
         }, { status: 500 });
     }
 }

@@ -33,7 +33,11 @@ const getPrismaClient = () => {
     // 2. Initialize if needed
     if (!globalForPrisma.prisma) {
         console.log('PRISMA: Initializing with pg driver adapter...');
-        const pool = new Pool({ connectionString, connectionTimeoutMillis: 5000 });
+        const pool = new Pool({
+            connectionString,
+            connectionTimeoutMillis: 5000,
+            ssl: { rejectUnauthorized: false } // Required for Supabase in many environments
+        });
         const adapter = new PrismaPg(pool);
         globalForPrisma.prisma = new PrismaClient({ adapter });
     }
