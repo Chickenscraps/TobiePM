@@ -82,10 +82,10 @@ importers:
         specifier: ^0.21.0
         version: 0.21.0
       '@prisma/adapter-pg':
-        specifier: ^7.3.0
+        specifier: 7.3.0
         version: 7.3.0
       '@prisma/client':
-        specifier: ^7.3.0
+        specifier: 7.3.0
         version: 7.3.0(prisma@7.3.0)(typescript@5.9.3)
       '@tobie/agent-core':
         specifier: workspace:*
@@ -102,6 +102,12 @@ importers:
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
+      date-fns:
+        specifier: ^4.1.0
+        version: 4.1.0
+      date-fns-tz:
+        specifier: ^3.2.0
+        version: 3.2.0(date-fns@4.1.0)
       fabric:
         specifier: ^7.1.0
         version: 7.1.0
@@ -164,7 +170,7 @@ importers:
         specifier: ^8.4.32
         version: 8.5.6
       prisma:
-        specifier: ^7.3.0
+        specifier: 7.3.0
         version: 7.3.0(@types/react@18.3.27)(react-dom@18.3.1)(react@18.3.1)(typescript@5.9.3)
       tailwindcss:
         specifier: ^3.4.0
@@ -2727,6 +2733,18 @@ packages:
       whatwg-url: 14.2.0
     dev: false
     optional: true
+
+  /date-fns-tz@3.2.0(date-fns@4.1.0):
+    resolution: {integrity: sha512-sg8HqoTEulcbbbVXeg84u5UnlsQa8GS5QXMqjjYIhS4abEVVKIUwe0/l/UhrZdKaL/W5eWZNlbTeEIiOXTcsBQ==}
+    peerDependencies:
+      date-fns: ^3.0.0 || ^4.0.0
+    dependencies:
+      date-fns: 4.1.0
+    dev: false
+
+  /date-fns@4.1.0:
+    resolution: {integrity: sha512-Ukq0owbQXxa/U3EGtsdVBkR1w7KOQ5gIBqdH2hkvknzZPYvBxb/aa6E8L7tmjFtkwZBu3UXBbjIgPo/Ez4xaNg==}
+    dev: false
 
   /debug@4.4.3:
     resolution: {integrity: sha512-RGwwWnwQvkVfavKVt22FGLw+xYSdzARwm0ru6DhTVA3umU5hZc28V3kO4stgYryrTlLpuvgI9GiijltAjNbcqA==}
