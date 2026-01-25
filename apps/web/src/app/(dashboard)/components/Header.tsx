@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { signOut } from 'next-auth/react';
+import { TeamTime } from './TeamTime';
 
 interface User {
     id: string;
@@ -22,11 +23,17 @@ export function Header({ user }: HeaderProps) {
 
     return (
         <header className="h-16 border-b border-white/5 bg-gray-900/50 flex items-center justify-between px-6">
-            {/* Search */}
-            <div className="flex-1 max-w-lg">
-                <div className="relative">
+            {/* Team Time */}
+            <div className="hidden lg:block">
+                <TeamTime />
+            </div>
+
+            {/* Right side */}
+            <div className="flex items-center gap-4 ml-auto">
+                {/* Search */}
+                <div className="hidden md:block relative w-64 mr-4">
                     <svg
-                        className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500"
+                        className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500"
                         fill="none"
                         viewBox="0 0 24 24"
                         stroke="currentColor"
@@ -40,17 +47,11 @@ export function Header({ user }: HeaderProps) {
                     </svg>
                     <input
                         type="text"
-                        placeholder="Search projects, tasks..."
-                        className="w-full pl-10 pr-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm"
+                        placeholder="Search..."
+                        className="w-full pl-9 pr-4 py-1.5 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent text-sm"
                     />
-                    <kbd className="absolute right-3 top-1/2 -translate-y-1/2 px-2 py-0.5 bg-white/10 rounded text-xs text-gray-400">
-                        ⌘K
-                    </kbd>
                 </div>
-            </div>
 
-            {/* Right side */}
-            <div className="flex items-center gap-4">
                 {/* Notifications */}
                 <div className="relative">
                     <button
@@ -70,7 +71,7 @@ export function Header({ user }: HeaderProps) {
                     </button>
 
                     {showNotifications && (
-                        <div className="absolute right-0 mt-2 w-80 card py-2 z-50 animate-fade-in">
+                        <div className="absolute right-0 mt-2 w-80 card py-2 z-50 animate-fade-in shadow-2xl">
                             <div className="px-4 py-2 border-b border-white/10">
                                 <h3 className="font-semibold text-white">Notifications</h3>
                             </div>
@@ -87,15 +88,10 @@ export function Header({ user }: HeaderProps) {
                                     time="5 hours ago"
                                     unread
                                 />
-                                <NotificationItem
-                                    title="Project created"
-                                    message="Empire Life Q1 Video has been created"
-                                    time="1 day ago"
-                                />
                             </div>
                             <div className="px-4 py-2 border-t border-white/10">
                                 <button className="text-sm text-primary-400 hover:text-primary-300">
-                                    View all notifications
+                                    View all
                                 </button>
                             </div>
                         </div>
@@ -108,7 +104,7 @@ export function Header({ user }: HeaderProps) {
                         onClick={() => setShowUserMenu(!showUserMenu)}
                         className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-white/5 transition-colors"
                     >
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-blue to-primary-600 flex items-center justify-center">
                             <span className="text-white font-medium text-sm">
                                 {user.name.charAt(0).toUpperCase()}
                             </span>
@@ -119,7 +115,7 @@ export function Header({ user }: HeaderProps) {
                     </button>
 
                     {showUserMenu && (
-                        <div className="absolute right-0 mt-2 w-56 card py-2 z-50 animate-fade-in">
+                        <div className="absolute right-0 mt-2 w-56 card py-2 z-50 animate-fade-in shadow-2xl">
                             <div className="px-4 py-2 border-b border-white/10">
                                 <p className="font-medium text-white">{user.name}</p>
                                 <p className="text-sm text-gray-400">{user.email}</p>
