@@ -19,13 +19,18 @@ export async function POST(request: NextRequest) {
     try {
         const { message, history } = await request.json();
 
-        // 1. Select Provider
+        // 1. Select Provider based on env config
+        const providerConfig = process.env.AI_PROVIDER || 'gemini';
         const openAIKey = process.env.OPENAI_API_KEY;
         const googleKey = process.env.GOOGLE_AI_API_KEY;
         const geminiModel = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
 
+        console.log(`[AI_CHAT] Configured: ${providerConfig}`);
+
         let provider;
-        if (openAIKey) {
+        if (providerConfig === 'demo' || providerConfig === 'mock') {
+            provider = new MockProvider();
+        } else if (providerConfig === 'openai' && openAIKey) {
             provider = new OpenAIProvider(openAIKey);
         } else if (googleKey) {
             provider = new GeminiProvider(googleKey, geminiModel);
