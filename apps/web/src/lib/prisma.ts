@@ -1,6 +1,17 @@
 import { PrismaClient } from '@prisma/client';
 
 const prismaClientSingleton = () => {
+    // DEBUG: Log connection attempt
+    const url = process.env.DATABASE_URL;
+    console.log('PRISMA INIT: Attempting connection');
+    console.log('PRISMA INIT: DATABASE_URL available?', !!url);
+    if (url) {
+        console.log('PRISMA INIT: DATABASE_URL length:', url.length);
+        console.log('PRISMA INIT: DATABASE_URL prefix:', url.substring(0, 15) + '...');
+    } else {
+        console.error('PRISMA INIT CRITICAL: DATABASE_URL is undefined');
+    }
+
     return new PrismaClient();
 };
 
