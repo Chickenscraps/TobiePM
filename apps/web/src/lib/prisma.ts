@@ -33,7 +33,7 @@ const getPrismaClient = () => {
     // 2. Initialize if needed
     if (!globalForPrisma.prisma) {
         console.log('PRISMA: Initializing with pg driver adapter...');
-        const pool = new Pool({ connectionString });
+        const pool = new Pool({ connectionString, connectionTimeoutMillis: 5000 });
         const adapter = new PrismaPg(pool);
         globalForPrisma.prisma = new PrismaClient({ adapter });
     }

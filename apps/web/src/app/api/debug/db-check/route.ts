@@ -12,13 +12,23 @@ export async function GET() {
             select: { id: true, email: true, passwordHash: true }
         });
 
+        const connString = process.env.SUPABASE_DATABASE_URL || process.env.DATABASE_URL || '';
+        let host = 'n/a';
+        let port = 'n/a';
+        try {
+            const u = new URL(connString);
+            host = u.hostname;
+            port = u.port || '5432';
+        } catch (e) { }
+
         return NextResponse.json({
             status: 'success',
             connection: 'OK',
             userCount,
             adminExists: !!admin,
-            // Safe partial hash check to verify if the SQL update actually applied
-            adminHashPrefix: admin?.passwordHash?.substring(0, 15) + '...',
+            envUsed: process.env.SUPABASE_DATABASE_URL ? 'SUPABASE_DATABASE_URL' : 'DATABASE_URL',
+            host,
+            port,
             timestamp: new Date().toISOString()
         });
     } catch (error: any) {
