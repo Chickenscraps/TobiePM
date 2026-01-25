@@ -3,6 +3,8 @@ import { prisma } from '@/lib/prisma';
 import { requirePermission } from '@/lib/permissions';
 import { updateRolePermissionsSchema } from '@tobie/shared';
 
+export const dynamic = 'force-dynamic';
+
 export async function PUT(
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }

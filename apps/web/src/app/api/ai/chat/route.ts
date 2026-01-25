@@ -10,6 +10,8 @@ import {
 import { prisma } from '@/lib/prisma';
 import { InMemoryAuditLogger } from '@tobie/audit';
 
+export const dynamic = 'force-dynamic';
+
 // Simple audit logger factory 
 const auditLogger = new InMemoryAuditLogger();
 
